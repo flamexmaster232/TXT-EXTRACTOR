@@ -1,23 +1,26 @@
-# Use Alpine-based Python image
-FROM python:3.9.6-alpine3.14
+# Use slim Debian-based Python image
+FROM python:3.11-slim
 
-# Install required system packages using apk (Alpine package manager)
-RUN apk update && apk add --no-cache \
+# Install system packages needed to build and run dependencies
+RUN apt update && apt install -y \
     git \
     curl \
     ffmpeg \
     aria2 \
     bash \
-    build-base \
+    build-essential \
     libffi-dev \
-    openssl-dev \
-    musl-dev \
-    gcc
+    libssl-dev \
+    gcc \
+    g++ \
+    python3-dev \
+    libarrow-dev \
+    && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# Copy Python dependencies file
+# Copy requirements.txt
 COPY requirements.txt /requirements.txt
 
 # Install Python packages
@@ -27,9 +30,9 @@ RUN pip install --no-cache-dir -r /requirements.txt
 RUN mkdir /EXTRACTOR
 WORKDIR /EXTRACTOR
 
-# Copy startup script
+# Copy start script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Run the bot
+# Run your bot
 CMD ["/bin/bash", "/start.sh"]
