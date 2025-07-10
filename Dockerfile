@@ -1,6 +1,5 @@
 FROM python:3.11-slim
 
-# Install system dependencies
 RUN apt update && apt install -y \
     git \
     curl \
@@ -15,25 +14,20 @@ RUN apt update && apt install -y \
     python3-dev \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
 RUN pip install --upgrade pip
 
-# Copy requirements file
-COPY requirements.txt /requirements.txt
+# Clone your repo during build
+RUN git clone https://github.com/flamexmaster232/TXT-EXTRACTOR.git /TXT-EXTRACTOR
 
-# Install key data packages first (as binaries)
+# Install core data packages first
 RUN pip install --only-binary=:all: numpy pandas pyarrow
 
-# Install remaining requirements
-RUN pip install -r /requirements.txt
+# Install all requirements from repo
+RUN pip install -r /TXT-EXTRACTOR/requirements.txt
 
-# Create working directory
-RUN mkdir /EXTRACTOR
-WORKDIR /EXTRACTOR
+WORKDIR /TXT-EXTRACTOR
 
-# Copy start script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Start the bot
 CMD ["/bin/bash", "/start.sh"]
