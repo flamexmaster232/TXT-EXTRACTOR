@@ -1,33 +1,31 @@
-FROM python:3.11-slim
+# Base image
+FROM python:3.9-slim
 
+# System dependencies
 RUN apt update && apt install -y \
     git \
-    curl \
     ffmpeg \
-    aria2 \
-    bash \
-    build-essential \
-    libffi-dev \
-    libssl-dev \
+    curl \
     gcc \
     g++ \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
     python3-dev \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
+# Working directory
+WORKDIR /app
+
+# Copy all project files
+COPY . .
+
+# Install Python dependencies
 RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Clone your repo during build
-RUN git clone https://github.com/flamexmaster232/TXT-EXTRACTOR.git /TXT-EXTRACTOR
+# Expose Flask port
+EXPOSE 8080
 
-# Install core data packages first
-RUN pip install --only-binary=:all: numpy pandas pyarrow
-
-# Install all requirements from repo
-RUN pip install -r /TXT-EXTRACTOR/requirements.txt
-
-WORKDIR /TXT-EXTRACTOR
-
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-CMD ["/bin/bash", "/start.sh"]
+# Start the bot and web server
+CMD ["python", "main.py"]
