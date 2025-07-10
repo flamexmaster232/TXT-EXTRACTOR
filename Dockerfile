@@ -1,7 +1,6 @@
-# Use slim Debian-based Python image
 FROM python:3.11-slim
 
-# Install system packages needed to build and run dependencies
+# Install system dependencies
 RUN apt update && apt install -y \
     git \
     curl \
@@ -14,19 +13,21 @@ RUN apt update && apt install -y \
     gcc \
     g++ \
     python3-dev \
-    libarrow-dev \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# Copy requirements.txt
+# Copy requirements file
 COPY requirements.txt /requirements.txt
 
-# Install Python packages
-RUN pip install --no-cache-dir -r /requirements.txt
+# Install key data packages first (as binaries)
+RUN pip install --only-binary=:all: numpy pandas pyarrow
 
-# Create app directory
+# Install remaining requirements
+RUN pip install -r /requirements.txt
+
+# Create working directory
 RUN mkdir /EXTRACTOR
 WORKDIR /EXTRACTOR
 
@@ -34,5 +35,5 @@ WORKDIR /EXTRACTOR
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Run your bot
+# Start the bot
 CMD ["/bin/bash", "/start.sh"]
